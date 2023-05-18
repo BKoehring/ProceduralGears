@@ -12,3 +12,5 @@ Saved
 *.suo
 *.xcodeproj
 *.xcworkspace
+/Platforms/HoloLens/Config/HoloLensEngine.ini
+/.vsconfig
