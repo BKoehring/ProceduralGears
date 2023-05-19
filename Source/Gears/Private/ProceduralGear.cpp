@@ -33,8 +33,6 @@ AProceduralGear::AProceduralGear()
 	constraint->ConstraintActor1 = this;
 	constraint->ComponentName1 = FConstrainComponentPropName{ mesh->GetFName() };
 
-	//mesh->SetAngularDamping(0.1F);
-
 	Initialize();
 }
 
@@ -52,18 +50,11 @@ void AProceduralGear::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/*int gear_num = 0;
-	for (auto gear : _gears) {
-		gear.updateReferenceDiameter();
-		generateGear(gear_num);
-		gear_num++;
-	}*/
-
-	if (apply_torque) {
+	if (_apply_rotation) {
 		constraint->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
-		constraint->SetAngularVelocityTarget(FVector(0, _torque, 0));
+		constraint->SetAngularVelocityTarget(FVector(0, _rpm/60.0, 0));
 		constraint->SetAngularVelocityDrive(true, false);
-		constraint->SetAngularDriveParams(0, 1000, 0);
+		constraint->SetAngularDriveParams(0, _velocity_strength, 0);
 	}
 
 	if (lock_rotation) {
@@ -634,30 +625,6 @@ void AProceduralGear::generateGear()
 void AProceduralGear::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	//if (apply_torque && _max_rpm != 0) {
-	//	// Get velocity in radians per second. Divide by 2PI for rotations per second. Multiply by 60 for rotations per minute. 
-	//	auto rpm = abs(mesh->GetPhysicsAngularVelocityInRadians().Y / (2.0 * PI) * 60.0);
-	//	//UE_LOG(LogTemp, Warning, TEXT("rpm: %s"), *LexToSanitizedString(rpm));
-
-	//	auto torque_mod = (_max_rpm - rpm) / _max_rpm;
-	//	if (rpm > _max_rpm) {
-	//		torque_mod = 0;
-	//	}
-	//	auto applied_torque = _torque * torque_mod;
-	//	//UE_LOG(LogTemp, Warning, TEXT("torque: %s"), *LexToSanitizedString(applied_torque));
-	//	//auto direction = GetActorRightVector() * applied_torque;
-	//	//auto rotation = mesh->GetRelativeRotation();
-	//	//auto z_rotation = rotation.Euler().Z;
-	//	//UE_LOG(LogTemp, Warning, TEXT("Z: %s"), *LexToSanitizedString(z_rotation));
-	//	//auto xmod = (2.0 / PI) * asin(sin(z_rotation / 180.0 * PI));
-	//	//auto ymod = (2.0 / PI) * asin(cos(z_rotation / 180.0 * PI));
-	//	//UE_LOG(LogTemp, Warning, TEXT("xmod: %s"), *LexToSanitizedString(xmod));
-	//	//UE_LOG(LogTemp, Warning, TEXT("ymod: %s"), *LexToSanitizedString(ymod));
-	//	//mesh->AddTorqueInRadians(FVector(applied_torque*xmod, applied_torque*ymod, 0));
-
-	//	//mesh->AddTorqueInRadians(FVector(0, applied_torque, 0));
-	//}
 }
 
 void AProceduralGear::PostLoad()
@@ -668,47 +635,6 @@ void AProceduralGear::PostLoad()
 }
 
 #if WITH_EDITOR  
-//void AProceduralGear::PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedChainEvent)
-//{
-//	auto property_name = PropertyChangedChainEvent.GetPropertyName();
-//	auto index = PropertyChangedChainEvent.GetArrayIndex(PropertyChangedChainEvent.PropertyChain.GetActiveMemberNode()->GetValue()->GetName());
-//	if (property_name == "_module") {
-//		_gears[index].updateReferenceDiameter();
-//		generateGear(index);
-//	}
-//	else if (property_name == "_number_of_teeth") {
-//		_gears[index].updateReferenceDiameter();
-//		generateGear(index);
-//	}
-//	else if (property_name == "_pressure_angle") {
-//		_gears[index].updateBaseDiameter();
-//		generateGear(index);
-//	}
-//	else if (property_name == "_width") {
-//		generateGear(index);
-//	}
-//	else if (property_name == "_profile_shift") {
-//		generateGear(index);
-//	}
-//	else if (property_name == "_gears") {
-//		switch (PropertyChangedChainEvent.ChangeType) {
-//		case EPropertyChangeType::ArrayClear:
-//			mesh->ClearAllMeshSections();
-//			break;
-//		case EPropertyChangeType::ArrayRemove:
-//			UE_LOG(LogTemp, Warning, TEXT("Gear Removed at: %s"), *LexToSanitizedString(index));
-//			mesh->ClearMeshSection(index);
-//			break;
-//		default:
-//			UE_LOG(LogTemp, Warning, TEXT("Update Gear at: %s"), *LexToSanitizedString(index));
-//			generateGear(index);
-//			mesh->SetMaterial(index, material);
-//		}
-//	}
-//
-//	Super::PostEditChangeChainProperty(PropertyChangedChainEvent);
-//}
-
 void AProceduralGear::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) {
 	auto property_name = PropertyChangedEvent.GetPropertyName();
 	auto regenerate_gear = true;

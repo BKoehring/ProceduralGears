@@ -16,7 +16,6 @@ class GEARS_API AProceduralGear : public AActor
 
 		virtual void PostLoad() override;
 #if WITH_EDITOR
-	//virtual void PostEditChangeChainProperty(FPropertyChangedChainEvent& PropertyChangedChainEvent) override;
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif // WITH_EDITOR
 
@@ -52,13 +51,13 @@ class GEARS_API AProceduralGear : public AActor
 	float _base_radius = _base_diameter / 2.0;
 
 	UPROPERTY(EditAnywhere);
-	bool apply_torque = false;
+	bool _apply_rotation = false;
 
-	UPROPERTY(EditAnyWhere, Meta = (EditCondition = "apply_torque", ClampMin = -50.0, ClampMax = 50.0));
-	float _torque = 0.0;
+	UPROPERTY(EditAnyWhere, Meta = (EditCondition = "_apply_rotation", ClampMin = -10000.0, ClampMax = 10000.0));
+	float _rpm = 0.0;
 
-	UPROPERTY(EditAnywhere, Meta = (EditCondition = "apply_torque", ClampMin = 0.01, ClampMax = 600));
-	float _max_rpm = 60.0;
+	UPROPERTY(EditAnywhere, Meta = (EditCondition = "_apply_rotation"));
+	float _velocity_strength = 0.0;
 
 	//UPROPERTY(EditAnywhere);
 	UPhysicsConstraintComponent* constraint;
