@@ -49,10 +49,12 @@ void AProceduralGear::BeginPlay()
 	Super::BeginPlay();
 
 	if (_apply_rotation) {
-		constraint->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
-		constraint->SetAngularVelocityTarget(FVector(0, _rpm/60.0, 0));
-		constraint->SetAngularVelocityDrive(true, false);
-		constraint->SetAngularDriveParams(0, _velocity_strength, 0);
+		if (_enable_collision) {
+			constraint->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
+			constraint->SetAngularVelocityTarget(FVector(0, _rpm / 60.0, 0));
+			constraint->SetAngularVelocityDrive(true, false);
+			constraint->SetAngularDriveParams(0, _velocity_strength, 0);
+		}
 	}
 
 	if (lock_rotation) {
@@ -623,6 +625,14 @@ void AProceduralGear::generateGear()
 void AProceduralGear::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (_apply_rotation) {
+		if (!_enable_collision) {
+			FRotator NewRotation = FRotator(DeltaTime * (_rpm/60) * -360.0, 0, 0);
+			FQuat QuatRotation = FQuat(NewRotation);
+			mesh->AddLocalRotation(QuatRotation, false, 0, ETeleportType::None);
+		}
+	}
 }
 
 void AProceduralGear::PostLoad()
