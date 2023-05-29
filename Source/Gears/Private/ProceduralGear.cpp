@@ -18,9 +18,7 @@ AProceduralGear::AProceduralGear()
 	mesh = CreateDefaultSubobject<UProceduralMeshComponent>("Gear Mesh");
 	mesh->SetupAttachment(scene);
 	mesh->bUseComplexAsSimpleCollision = false;
-	if (_enable_collision) {
-		mesh->SetSimulatePhysics(true);
-	}
+	mesh->SetSimulatePhysics(true);
 
 	constraint = CreateDefaultSubobject<UPhysicsConstraintComponent>("PhysicsConstraint");
 	constraint->SetupAttachment(scene);
@@ -42,7 +40,7 @@ void AProceduralGear::Initialize()
 	constraint->ComponentName2 = join_to_component_name;
 
 	generateGear();
-	mesh->SetMaterial(0, material);
+	mesh->SetMaterial(0, _material);
 }
 
 // Called when the game starts or when spawned
@@ -657,11 +655,12 @@ void AProceduralGear::PostEditChangeProperty(FPropertyChangedEvent& PropertyChan
 		//Nothing special to do. Gear will be regenerated
 	}
 	else if (property_name == "material") {
-		mesh->SetMaterial(0, material);
+		mesh->SetMaterial(0, _material);
 		regenerate_gear = false;
 	}
 	else if (property_name == "_enable_collision") {
-		mesh->SetSimulatePhysics(_enable_collision);
+		//Nothing special to do. Gear will be regenerated
+		//mesh->SetSimulatePhysics(_enable_collision);
 	}
 	else if (property_name == "join_to") {
 		constraint->ConstraintActor2 = join_to.Get();
@@ -728,8 +727,136 @@ float AProceduralGear::getBaseRadius() const
 	return FUnitConversion::Convert<float>(_base_radius, EUnit::Millimeters, EUnit::Centimeters);
 }
 
-void AProceduralGear::setModule(float value)
+bool AProceduralGear::hasRotationApplied() const
 {
+	return _apply_rotation;
+}
+
+float AProceduralGear::getRPM() const
+{
+	return _rpm;
+}
+
+float AProceduralGear::getVelocityStrength() const
+{
+	return _velocity_strength;
+}
+
+const TSoftObjectPtr<AActor>& AProceduralGear::getJoinedActor() const
+{
+	return join_to;
+}
+
+const FConstrainComponentPropName& AProceduralGear::getJoinedComponent() const
+{
+	return join_to_component_name;
+}
+
+bool AProceduralGear::rotationLocked() const
+{
+	return lock_rotation;
+}
+
+bool AProceduralGear::isJoinedCollisionDisabled() const
+{
+	return disable_joined_collision;
+}
+
+const UMaterialInstance* AProceduralGear::getMaterial() const
+{
+	return _material;
+}
+
+unsigned int AProceduralGear::getInvoluteSteps() const
+{
+	return _involute_steps;
+}
+
+bool AProceduralGear::isCollisionEnabled() const
+{
+	return _enable_collision;
+}
+
+void AProceduralGear::setModule(float module_value)
+{
+	_module = module_value;
+	updateReferenceDiameter();
+	generateGear();
+}
+
+void AProceduralGear::setNumberOfTeeth(unsigned int num)
+{
+	_number_of_teeth = num;
+	updateReferenceDiameter();
+	generateGear();
+}
+
+void AProceduralGear::setWidth(float width)
+{
+	_width = width;
+	generateGear();
+}
+
+void AProceduralGear::setPressureAngle(float angle)
+{
+	_pressure_angle = angle;
+	generateGear();
+}
+
+void AProceduralGear::ApplyRotation(bool value)
+{
+	_apply_rotation = value;
+}
+
+void AProceduralGear::setRPM(float rpm)
+{
+	_rpm = rpm;
+}
+
+void AProceduralGear::setVelocityStrength(float strength)
+{
+	_velocity_strength = strength;
+}
+
+void AProceduralGear::setJoinedActor(AActor* actor)
+{
+	join_to = actor;
+	constraint->ConstraintActor2 = join_to.Get();
+}
+
+void AProceduralGear::setJoinedComponent(const FConstrainComponentPropName& name)
+{
+	join_to_component_name = name;
+	constraint->ComponentName2 = join_to_component_name;
+}
+
+void AProceduralGear::lockRotation(bool value)
+{
+	lock_rotation = value;
+}
+
+void AProceduralGear::disableJoinedCollision(bool value)
+{
+	disable_joined_collision = value;
+	constraint->SetDisableCollision(disable_joined_collision);
+}
+
+void AProceduralGear::setMaterial(UMaterialInstance* material)
+{
+	_material = material;
+	generateGear();
+}
+
+void AProceduralGear::setInvoluteSteps(unsigned int steps)
+{
+	_involute_steps = steps;
+	generateGear();
+}
+
+void AProceduralGear::enableCollision(bool value)
+{
+	_enable_collision = value;
+	generateGear();
 }
 
 void AProceduralGear::updateReferenceDiameter()
